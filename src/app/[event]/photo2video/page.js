@@ -11,14 +11,14 @@ export const dynamic = "force-dynamic";
 
 const MAX_CONCURRENCY = 3;
 
-async function fetchPhotos() {
-  const res = await getTotalImage("a08746d3-c0b");
+async function fetchPhotos(event) {
+  const res = await getTotalImage(event);
   return res;
 }
 
-export default async function Photo2VideoPage() {
-  const photos = await fetchPhotos();
-  console.log(photos.length);
+export default async function Photo2VideoPage({params}) {
+  const event = params;
+  const photos = await fetchPhotos(event);
   // ★ 병렬 Vision 호출 (비용 주의)
   // 라벨링: 함수 직접 호출 → HTTP 오버헤드·URL 에러 없음
     const photosWithTags = await pMap(
@@ -34,7 +34,6 @@ export default async function Photo2VideoPage() {
   //여기까지 되면 다 된거임
   const cleaned = photosWithTags.filter(Boolean);
   const keywordGroups = groupPhotosByKeyword(cleaned);
-  console.log(keywordGroups);
 
     // 1. [키워드, 사진배열] 쌍으로 바꿔서
     const entries = Object.entries(keywordGroups)
@@ -48,6 +47,7 @@ export default async function Photo2VideoPage() {
 
     // 3. 다시 { 키워드: 사진배열, … } 형태의 객체로
     const top10Groups = Object.fromEntries(entries);
+    console.log(top10Groups);
 
 //   return (
 //     <main className="container mx-auto p-4">

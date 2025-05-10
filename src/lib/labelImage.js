@@ -25,6 +25,7 @@ export async function labelImage(imageUrl) {
     },
   ];
 
+  try{
   const completion = await openai.chat.completions.create({
     model: "gpt-4o",
     response_format: { type: "json_object" },
@@ -32,7 +33,17 @@ export async function labelImage(imageUrl) {
     messages,
   });
 
-  const raw = completion.choices[0].message.content;
-  const { keywords } = JSON.parse(raw);
-  return keywords.split(",").map((w) => w.trim()).filter(Boolean);
+    const raw = completion.choices[0].message.content ?? "";
+    const parsed = JSON.parse(raw);          // ← 실패 가능 구간
+
+    if (!parsed?.keywords) throw new Error("no keywords");
+
+    return parsed.keywords
+                 .split(",")
+                 .map((w) => w.trim())
+                 .filter(Boolean);           // 정상 배열 반환
+  } catch (e) {
+    console.warn("[labelImage] skip:", imageUrl, e.message);
+    return null;                             // 실패 신호
+  }
 }
