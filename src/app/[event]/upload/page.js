@@ -1,11 +1,12 @@
 "use client";
 import { useParams } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 export default function UploadPage() {
   const params = useParams();
   const event = params.event; // Get the dynamic [event] value
   const fileInputRef = useRef(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const handleButtonClick = () => {
     fileInputRef.current.click(); // Trigger the hidden file input
@@ -13,15 +14,32 @@ export default function UploadPage() {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    console.log("Selected files:", files); // Handle the selected files
-    const fileMetadata = files.map((file) => {
-      const metadata = {
-        name: file.name,
-        size: (file.size / 1024).toFixed(2) + " KB", // Convert size to KB
-        type: file.type,
-        lastModified: new Date(file.lastModified).toDateString(),
+    setSelectedFiles(files); // Store selected files
+    console.log("Selected files:", files);
+  };
+
+  const handleUpload = async () => {
+    selectedFiles.forEach(async (file) => {
+      const payload = {
+        eventid: event,
+        content: file,
+        metadata: "what is metadata",
       };
-      return metadata;
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: payload,
+        });
+
+        if (response.ok) {
+          console.log("Files uploaded successfully");
+          setSelectedFiles([]); // Clear selected files after upload
+        } else {
+          console.error("Failed to upload files");
+        }
+      } catch (error) {
+        console.error("Error uploading files:", error);
+      }
     });
   };
 
@@ -66,6 +84,24 @@ export default function UploadPage() {
         style={{ display: "none" }}
         onChange={handleFileChange}
       />
+      {selectedFiles.length > 0 && (
+        <button
+          onClick={handleUpload}
+          style={{
+            display: "block",
+            margin: "20px auto",
+            padding: "10px 20px",
+            backgroundColor: "#4CAF50",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}
+        >
+          업로드
+        </button>
+      )}
     </div>
   );
 }
