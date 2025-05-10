@@ -1,3 +1,6 @@
+// @/utils/firebase/event.js
+
+import { randomUUID } from 'crypto';
 import admin from 'firebase-admin';
 
 // Firebase 초기화
@@ -11,18 +14,22 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 /**
- * 이벤트 데이터를 생성합니다.
- * @param {string} id - 문서 ID
+ * 새로운 이벤트를 생성하고 ID를 반환합니다.
  * @param {string} eventname - 이벤트 이름
- * @param {Object} data - 추가 데이터
- * @returns {Promise<void>}
+ * @param {Object} data - 추가 메타데이터 (선택)
+ * @returns {Promise<string>} - 생성된 이벤트 ID
  */
-export async function makeEvent(id, eventname, data = {}) {
+export async function makeEvent(eventname, data = {}) {
+  if (!eventname) throw new Error('eventname is required');
+
+  const id = randomUUID().slice(0, 12);
   const eventData = {
     eventname,
     ...data,
   };
+
   await db.collection('event').doc(id).set(eventData);
+  return id;
 }
 
 /**

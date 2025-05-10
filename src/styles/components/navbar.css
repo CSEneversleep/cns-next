@@ -1,0 +1,23 @@
+#navBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 20px;
+}
+
+#navBar .logo {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+#navBar .nav {
+  display: flex;
+  gap: 20px;
+}
+
+#navBar .link {
+  font-size: 1.2rem;
+  text-decoration: none;
+  color: black;
+}
