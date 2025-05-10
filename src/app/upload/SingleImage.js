@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import MapView from "./MapView";
 
 function InputField({ label, value, setValue, placeholder }) {
   return (
@@ -18,15 +17,6 @@ function InputField({ label, value, setValue, placeholder }) {
     </div>
   );
 }
-function LocationSelector({ setLatitude, setLongitude }) {
-  useMapEvents({
-    click(e) {
-      setLatitude(e.latlng.lat);
-      setLongitude(e.latlng.lng);
-    },
-  });
-  return null;
-}
 
 export default function SingleImageShow({ image, metadata }) {
   console.log(metadata);
@@ -36,27 +26,27 @@ export default function SingleImageShow({ image, metadata }) {
   const [title, setTitle] = useState(metadata?.name || "");
   const [description, setDescription] = useState(metadata?.description || "");
   const [peoples, setPeoples] = useState([]);
-  const [latitude, setLatitude] = useState(metadata?.latitude || 37.413294); // Default to a fallback location
-  const [longitude, setLongitude] = useState(
-    metadata?.longitude || 127.0016985
-  );
+  const [latitude, setLatitude] = useState(
+    metadata?.latitude || 37.565643683342
+  ); // Default to a fallback location
+  const [longitude, setLongitude] = useState(metadata?.longitude || 126.97722);
   const [address, setAddress] = useState(""); // State to store the address
   const [showMap, setShowMap] = useState(false); // State to toggle map visibility
 
-  useEffect(() => {
-    // Use Geolocation API to get the user's current location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLatitude(position.coords.latitude);
-          setLongitude(position.coords.longitude);
-        },
-        (error) => {
-          console.error("Error fetching location:", error);
-        }
-      );
-    }
-  }, []);
+  // useEffect(() => {
+  //   // Use Geolocation API to get the user's current location
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         setLatitude(position.coords.latitude);
+  //         setLongitude(position.coords.longitude);
+  //       },
+  //       (error) => {
+  //         console.error("Error fetching location:", error);
+  //       }
+  //     );
+  //   }
+  // }, []);
 
   useEffect(() => {
     // Fetch address using reverse geocoding whenever latitude or longitude changes
@@ -75,10 +65,6 @@ export default function SingleImageShow({ image, metadata }) {
 
     fetchAddress();
   }, [latitude, longitude]);
-
-  const handleDescriptionChange = (e) => {
-    setDescription(e.target.value);
-  };
 
   const handlePeopleChange = (index, value) => {
     const updatedPeoples = [...peoples];
@@ -160,23 +146,12 @@ export default function SingleImageShow({ image, metadata }) {
           {showMap ? "Hide Map" : "Select Location"}
         </button>
         {showMap && (
-          <div style={{ marginTop: "10px" }}>
-            <MapContainer
-              center={[latitude, longitude]}
-              zoom={13}
-              style={{ height: "300px", width: "100%" }}
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              <Marker position={[latitude, longitude]} />
-              <LocationSelector
-                setLatitude={setLatitude}
-                setLongitude={setLongitude}
-              />
-            </MapContainer>
-          </div>
+          <MapView
+            latitude={latitude}
+            longitude={longitude}
+            setLatitude={setLatitude}
+            setLongitude={setLongitude}
+          />
         )}
         <p>Selected Address: {address}</p>
       </div>
