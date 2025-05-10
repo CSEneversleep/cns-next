@@ -17,7 +17,9 @@ export default function PhotoGallery({ photos }) {
                 src={photo.src}
                 alt={`${photo.username}의 사진`}
                 className="cursor-pointer rounded-lg hover:opacity-90"
-                onClick={() => setSelectedPhoto(photo)}
+                onClick={() => {
+                    // console.log('▶️ clicked:', photo.id);
+                    setSelectedPhoto(photo);}}
             />
             ))}
         </div>
