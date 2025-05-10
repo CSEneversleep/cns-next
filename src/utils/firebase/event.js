@@ -44,3 +44,18 @@ export async function getEvent(id) {
   if (!snapshot.exists) return null;
   return { id: snapshot.id, ...snapshot.data() };
 }
+
+/**
+ * 모든 이벤트 데이터를 가져옵니다.
+ * @returns {Promise<Array<Object>>} - 이벤트 리스트 [{ id, eventname, ... }, ...]
+ */
+export async function getTotalEvent() {
+  const snapshot = await db.collection('event').get();
+
+  const events = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  return events;
+}
