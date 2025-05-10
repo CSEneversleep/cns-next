@@ -1,45 +1,34 @@
 // src/photo2video/page.js
 import Image from "next/image";
 import { groupPhotosByKeyword } from "@/utils/groupByKeyword";
+import { getTotalImage } from "@/utils/getImage";
+import { labelImage} from "@/lib/labelImage"
 
 // 필요하면 캐시 무효화
 export const dynamic = "force-dynamic";
 
 async function fetchPhotos() {
-  // 예시 – 실제로는 DB·REST 등에서 받아오세요
-  
-  const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + "/api/get-total");
-  return res.json(); // [{ id, s3Url, createdAt, ...}, ...]
-}
-
-// 서버에서 바로 라벨 붙이기
-async function getLabeledPhoto(photo) {
-  const res = await fetch(
-    process.env.NEXT_PUBLIC_BASE_URL + "/api/label",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageUrl: photo.s3Url }),
-      cache: "no-store",     // Vision 호출 결과를 매번 새로 받음
-    }
-  );
-  const data = await res.json();
-  return { ...photo, tags: data.tags }; // tags: ["햄버거", ...]
+  const res = await getTotalImage("temp");
+  return res;
 }
 
 export default async function Photo2VideoPage() {
   const photos = await fetchPhotos();
+  console.log(photos);
   // ★ 병렬 Vision 호출 (비용 주의)
+  // 라벨링: 함수 직접 호출 → HTTP 오버헤드·URL 에러 없음
   const photosWithTags = await Promise.all(
-    photos.map((p) => getLabeledPhoto(p))
+    photos.map(async (p) => {
+      const tags = await labelImage(p.src);
+      return { ...p, datetime: p.datetime.toISOString(), tags };
+    })
   );
-    
+
+  //여기까지 되면 다 된거임
   const keywordGroups = groupPhotosByKeyword(photosWithTags);
 
-  const sortedKeywords = Object.entries(keywordGroups)
-  .sort((a,b) => b[1].length - a[1].length)  // 내림차순
-  .map(([k]) => k);
-
+  const sortedKeywords = Object.keys(keywordGroups).sort();
+  console.log(photos);
 
   return (
     <main className="container mx-auto p-4">
@@ -49,9 +38,9 @@ export default async function Photo2VideoPage() {
 
           <div className="grid grid-cols-3 gap-4">
             {keywordGroups[kw].map((photo) => (
-              <Image
+              <img
                 key={photo.id}
-                src={photo.s3Url}
+                src={photo.src}
                 alt={photo.tags.join(", ")}
                 width={300}
                 height={200}
