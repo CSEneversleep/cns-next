@@ -10,6 +10,7 @@ export default function UploadSection({ title, event }) {
   const fileInputRef = useRef(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [username, setUsername] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const placeholder = '익명의 오소리';
 
@@ -27,16 +28,12 @@ export default function UploadSection({ title, event }) {
   const handleUpload = async () => {
     const finalUsername = username.trim() || placeholder;
 
-    if (selectedFiles.length === 0) {
-      alert('사진을 선택해주세요.');
-      return;
-    }
+    if (selectedFiles.length === 0) { alert('사진을 선택해주세요.'); return; }
+    setIsUploading(true);
 
     try {
       for (const file of selectedFiles) {
         const reader = new FileReader();
-
-        // FileReader는 비동기라 Promise로 감쌈
         const base64DataUrl = await new Promise((resolve, reject) => {
           reader.onload = () => resolve(reader.result);
           reader.onerror = reject;
@@ -67,6 +64,8 @@ export default function UploadSection({ title, event }) {
       console.error(err);
       alert('업로드 중 에러 발생');
     }
+
+    setIsUploading(false);
   };
 
   return (
