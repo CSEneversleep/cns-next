@@ -1,0 +1,29 @@
+/* src/app/show/slide/SlideShow.module.css */
+
+.container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  top: 1%; /* 이미지 크기에 비례해서 5% 만큼 상단에서 위치 */
+  right: 1%; /* 이미지 크기에 비례해서 5% 만큼 오른쪽에서 위치 */
+  color: white;
+  text-align: right;
+  font-size: 0.6vw; /* 뷰포트 너비에 비례하여 글씨 크기 */
+  background-color: rgba(0, 0, 0, 0.3); /* 배경을 약간 어두운 투명한 색으로 */
+  padding: 2% 4%;
+  width: auto; /* 이미지 너비에 비례하여 오버레이 너비를 설정 */
+}
+
+.overlay p {
+  margin: 0;
+}

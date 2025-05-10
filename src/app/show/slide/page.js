@@ -1,5 +1,6 @@
 // src/app/show/slide/page.js
 import SlideShow from './SlideShow';
+import SliderShow from './SliderShow';
 
 export default async function SlidePage() {
   // 예시로 데이터를 가져온다고 가정합니다.
@@ -27,9 +28,9 @@ export default async function SlidePage() {
       latitude: '40.7128',
       longitude: '-74.0060',
       title: 'Photo 3',
-      description: 'Description of Photo 2',
+      description: 'Description of Photo 3',
       createdAt: '2025-05-10',
-      peoples: [{ name: 'Coldplay' }, { name: 'Jin' }]
+      peoples: [{ name: '강명석'}, { name: '김인서' }]
     },
         {
       imageUrl: '/image/image4.jpg',
@@ -38,16 +39,7 @@ export default async function SlidePage() {
       title: 'Photo 3',
       description: 'Description of Photo 2',
       createdAt: '2025-05-10',
-      peoples: [{ name: 'Coldplay' }, { name: 'Jin' }]
-    },
-    {
-      imageUrl: '/image/image5.jpg',
-      latitude: '40.7128',
-      longitude: '-74.0060',
-      title: 'Photo 3',
-      description: 'Description of Photo 2',
-      createdAt: '2025-05-10',
-      peoples: [{ name: 'Coldplay' }, { name: 'Jin' }]
+      peoples: [{ name: '강명석' }, { name: '김범준' }]
     },
     {
       imageUrl: '/image/image6.jpg',
@@ -56,9 +48,15 @@ export default async function SlidePage() {
       title: 'Photo 3',
       description: 'Description of Photo 2',
       createdAt: '2025-05-10',
-      peoples: [{ name: 'Coldplay' }, { name: 'Jin' }]
+      peoples: [{ name: '이형주' }, { name: '김범준' }]
     },
   ];
+   const imageContainerStyle = {
+    width: '400px', // 화면의 80% 크기
+    height: '360px', // 화면의 80% 높이
+    margin: 'auto',
+    position: 'relative', // 절대 위치 조정을 위해 부모의 위치 설정
+  };
 
-  return <SlideShow photos={photos} />;
+  return <SliderShow photos={photos} style={imageContainerStyle} />;
 }
