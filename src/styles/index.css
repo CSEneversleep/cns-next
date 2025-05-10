@@ -1,0 +1,49 @@
+/* @/styles/index.css */
+
+.container {
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.logo {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.link {
+  font-size: 1.2rem;
+  text-decoration: none;
+  color: black;
+}
+
+.main {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.button {
+  background-color: #ffcc66;
+  border: none;
+  border-radius: 16px;
+  padding: 20px 40px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #ffbb33;
+}

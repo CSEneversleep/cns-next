@@ -1,4 +1,3 @@
-// @/server/firebase/upload.js
 import admin from 'firebase-admin';
 
 // Firebase Service Account
@@ -11,23 +10,19 @@ const db = admin.firestore();
 
 /**
  * Firestore에 이미지 메타데이터 문서를 저장합니다.
- * @param {string} username - 컬렉션 이름
- * @param {string} folder - 논리적 폴더명
- * @param {string} filename - 파일 이름
- * @param {Object} data - 저장할 메타데이터
+ * @param {string} eventid - 컬렉션 이름 (이벤트 ID)
+ * @param {string} filename - 파일 이름 (확장자 없이)
+ * @param {Object} data - 저장할 메타데이터 (title 등)
  */
-export async function uploadImage(username, folder, filename, data = {}) {
-  const docId = `${folder}__${filename}`;
-  const docRef = db.collection(username).doc(docId);
+export async function uploadImage(eventid, filename, data = {}) {
+  const docRef = db.collection(eventid).doc(filename);
 
-  const now = new Date(Date.now() + 9 * 60 * 60 * 1000); // KST 기준 시간
-  const dateStr = now.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+  const now = new Date(Date.now() + 9 * 60 * 60 * 1000); // KST
+  const dateStr = now.toISOString().split('T')[0];       // YYYY-MM-DD
   const timestamp = admin.firestore.Timestamp.fromDate(now);
 
   await docRef.set({
-    folder,
     filename,
-    title: data.title || '',
     date: dateStr,
     datetime: timestamp,
     ...data,

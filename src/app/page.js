@@ -1,11 +1,18 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+// @/app/page.js
+
+import NavBar from '@/app/components/NavBar';
+import '@/styles/index.css';
+// Styles
+import '@/styles/global.css';
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <p>와! 새 페이지!!</p>
+    <div id="whole-container">
+      <NavBar />
+      <main className="main">
+        <a href="/make" className="wide-button">
+          새로운 추억 만들기
+        </a>
       </main>
     </div>
   );
