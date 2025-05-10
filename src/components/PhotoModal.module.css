@@ -18,32 +18,64 @@
     height: 90%;
     border-radius: 8px;
     overflow: hidden;
+    padding: 32px;  
+    box-sizing: border-box;
 }
 
-.viewer {
+/* .viewer {
     text-align: center;
     height: 90%;
+} */
+
+.viewer {
+    display: flex;               /* Flexbox 사용 */
+    align-items: center;         /* 세로 중앙 정렬 */
+    justify-content: center;     /* 가로 중앙 정렬 */
+    width: 100%;
+    height: calc(100% - 40px);   /* 닫기 버튼 영역(40px) 제외 */
+    box-sizing: border-box;
 }
 
+/* 2) 이미지가 컨테이너를 넘지 않도록 */
 .viewer img {
-    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
+
+/* .viewer img {
+    height: 100%;
+} */
 
 .thumbnails {
-    text-align: center;
-    height: 10%;
+    /* text-align: center;
+    height: 10%; */
+    display: none;
 }
 
 .thumbnails img {
     height: 100%;
 }
 
+/* .closeButton {
+    position: absolute;
+    top: 1rem;    
+    right: 1rem;  
+    padding: 0.5rem 1rem;
+    background-color: #2563EB;  
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+} */
+
+/* 닫기 버튼 우측 상단 고정 */
 .closeButton {
     position: absolute;
-    top: 1rem;    /* 모달 패딩 안쪽으로 1rem 떨어뜨림 */
-    right: 1rem;  /* 모달 우측에서 1rem */
+    top: 1rem;
+    right: 1rem;
     padding: 0.5rem 1rem;
-    background-color: #2563EB;  /* 파란색 */
+    background-color: #2563EB;
     color: white;
     border: none;
     border-radius: 4px;

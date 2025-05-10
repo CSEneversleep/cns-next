@@ -1,0 +1,28 @@
+/* app/components/PhotoGallery.module.css */
+.gallery {
+    display: grid;
+    /* 가로 6칸, 각 칸 너비 200px */
+    grid-template-columns: repeat(6, 200px);
+    /* 세로 자동 생성 행 높이 200px */
+    grid-auto-rows: 200px;
+    /* 칸 사이 간격 16px */
+    gap: 16px;
+    /* 가로 중앙 정렬 (컨테이너보다 폭이 작으면 중앙으로) */
+    justify-content: center;
+    /* 사진이 많을 때 스크롤 가능 */
+    overflow: auto;
+}
+
+/* 썸네일 공통 스타일 */
+.thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;   /* 비율 유지하며 빈 곳 없이 채우기 */
+    cursor: pointer;
+    border-radius: 4px;
+    transition: opacity 0.2s;
+}
+
+.thumb:hover {
+    opacity: 0.9;
+}
