@@ -3,15 +3,13 @@
  * return: { "햄버거": [photo0, photo3, ...], "사람": [...] }
  */
 export function groupPhotosByKeyword(photos) {
-  const groups = {};
+  const groups = Object.create(null);
 
-  photos.forEach((photo) => {
-    photo.tags.forEach((raw) => {
-      const tag = raw.trim().toLowerCase();      // 태그 정규화
+  for (const photo of photos) {
+    for (const tag of photo.tags) {
       if (!groups[tag]) groups[tag] = [];
       groups[tag].push(photo);
-    });
-  });
-
+    }
+  }
   return groups;
 }

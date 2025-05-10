@@ -1,7 +1,9 @@
 import OpenAI from "openai";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  // 429·5xx 일 때 최대 5번 재시도 (지수 백오프 내장)
+  maxRetries: 5,
+});
 /**
  * 이미지 URL → 태그 배열
  * @param {string} imageUrl  ex) https://…/3ee98a6e-ae3.jpg
