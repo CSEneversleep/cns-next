@@ -11,6 +11,18 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 /**
+ * 해당 username(컬렉션)에 저장된 모든 이미지를 가져옵니다.
+ * @param {string} username - Firestore 컬렉션 이름
+ * @returns {Promise<Array<Object>>} - 전체 이미지 데이터 리스트
+ */
+export async function getTotalImage(username) {
+  const snapshot = await db.collection(username).get();
+  const results = [];
+  snapshot.forEach(doc => { results.push({ id: doc.id, ...doc.data() }); });
+  return results;
+}
+
+/**
  * 특정 폴더에 해당하는 모든 이미지를 가져옵니다.
  * @param {string} username - Firestore 컬렉션 이름
  * @param {string} folder - folder 명 (문서 ID가 이걸로 시작해야 함)
