@@ -1,6 +1,5 @@
 // @/app/[event]/page.js
 
-import { getEvent } from '@/utils/firebase/event';
 import Link from 'next/link';
 // Component
 import NavBar from '@/app/components/NavBar';
@@ -8,6 +7,8 @@ import EventActions from '@/app/components/unique/event/EventActions';
 // Style (CSS)
 import '@/styles/global.css';
 import '@/styles/event.css';    
+// Utils
+import { getEvent } from '@/utils/firebase/event';
 
 export default async function EventPage({ params }) {
   const { event } = await params;
