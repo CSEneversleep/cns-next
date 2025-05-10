@@ -78,7 +78,7 @@ Afterglow는 4명의 개발자가 협력하여 개발한 프로젝트입니다.
 
 ### 기타
 
-- AI 모델: OpenCV, TensorFlow
+- AI 모델: OpenAI
 - QR 코드 생성: QRServer API
 
 ---
@@ -90,7 +90,7 @@ Afterglow를 로컬 환경에서 실행하려면 다음 단계를 따르세요:
 1. **레포지토리 클론**
 
    ```bash
-   git clone https://github.com/your-repo/afterglow.git
+   git clone https://github.com/CSEneversleep/cns-next
    cd afterglow
    ```
 
