@@ -4,7 +4,7 @@ import admin from 'firebase-admin';
 // Firebase Service Account
 if (!admin.apps.length) {
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-  admin.initializeApp({ credential: admin.credential.cert(serviceAccount), });
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 }
 
 const db = admin.firestore();
@@ -20,11 +20,16 @@ export async function uploadImage(username, folder, filename, data = {}) {
   const docId = `${folder}__${filename}`;
   const docRef = db.collection(username).doc(docId);
 
+  const now = new Date(Date.now() + 9 * 60 * 60 * 1000); // KST 기준 시간
+  const dateStr = now.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+  const timestamp = admin.firestore.Timestamp.fromDate(now);
+
   await docRef.set({
     folder,
     filename,
     title: data.title || '',
-    date: admin.firestore.FieldValue.serverTimestamp(),
+    date: dateStr,
+    datetime: timestamp,
     ...data,
   });
 

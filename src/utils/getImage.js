@@ -1,6 +1,7 @@
 import {
   getImage as getImageFromFirebase,
-  getAllImage as getAllImageFromFirebase
+  getAllImage as getAllImageFromFirebase,
+  getTotalImage as getTotalImageFromFirebase
 } from '@/utils/firebase/get';
 
 /**
@@ -22,4 +23,14 @@ export async function getImage(username, folder, filename) {
  */
 export async function getAllImage(username, folder) {
   return await getAllImageFromFirebase(username, folder);
+}
+
+/**
+ * 특정 폴더에 속한 모든 이미지를 가져오는 wrapper 함수
+ * @param {string} username
+ * @param {string} folder
+ * @returns {Promise<Array<Object>>}
+ */
+export async function getTotalImage(username) {
+  return await getTotalImageFromFirebase(username);
 }

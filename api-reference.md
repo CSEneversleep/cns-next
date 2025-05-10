@@ -75,6 +75,71 @@
 
 ---
 
+## Get Total Image
+
+- **Method**: `POST`  
+- **URL**: `/api/get-total`  
+- **Description**:  
+  특정 username 컬렉션에서 folder/filename 조합에 해당하는 단일 문서를 조회합니다.
+
+---
+
+### 📥 Request Body (JSON)
+
+```json
+{
+  "username": "kms"
+}
+```
+
+- `username` (`string`, 필수): Firestore 컬렉션 이름  
+
+---
+
+### 📤 Response (JSON)
+
+```json
+[
+  {
+    "id": "test__a2c2080c-515",
+    "folder": "test",
+    "filename": "a2c2080c-515",
+    "title": "123",
+    "contentType": "image/png",
+    "src": "https://procyon-bookcover.s3.ap-northeast-1.amazonaws.com/kms/test__a2c2080c-515.png",
+    "date": {
+      "_seconds": 1746861649,
+      "_nanoseconds": 203000000
+    }
+  },
+  {
+    "id": "test__ac58f633-453",
+    "folder": "test",
+    "filename": "ac58f633-453",
+    "title": "123",
+    "contentType": "image/png",
+    "src": "https://procyon-bookcover.s3.ap-northeast-1.amazonaws.com/kms/test__ac58f633-453.png",
+    "date": {
+      "_seconds": 1746861650,
+      "_nanoseconds": 198000000
+    }
+  }
+]
+```
+
+---
+
+### 🧾 Status Codes
+
+| 코드 | 의미 |
+|------|------|
+| `200 OK` | 조회 성공 |
+| `400 Bad Request` | 파라미터 누락 |
+| `404 Not Found` | 해당 문서가 존재하지 않음 |
+| `500 Internal Server Error` | 서버 에러 발생 |
+
+---
+
 ## Get All Images
 
 - **Method**: `POST`  
@@ -137,9 +202,16 @@
 
 ```json
 {
-  "username": "kms",
-  "folder": "math",
-  "filename": "abc123"
+  "id": "test__a2c2080c-515",
+  "folder": "test",
+  "filename": "a2c2080c-515",
+  "title": "123",
+  "contentType": "image/png",
+  "src": "https://procyon-bookcover.s3.ap-northeast-1.amazonaws.com/kms/test__a2c2080c-515.png",
+  "date": {
+    "_seconds": 1746861649,
+    "_nanoseconds": 203000000
+  }
 }
 ```
 
