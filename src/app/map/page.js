@@ -1,127 +1,133 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import Pin from '@/components/Pin';           // 앞서 만든 아이콘
+import Pin from '@/components/Pin';
 
-/* 하드코딩 테스트 데이터 */
-const locations = [
-    { folder: 'folder1', title: '서울역', latitude: 37.556, longitude: 126.9723, redirect_to: '/photos/1' },
-    { folder: 'folder2', title: '한강',   latitude: 37.5271, longitude: 126.9369, redirect_to: '/photos/2' },
-    { folder: 'folder3', title: '회사',   latitude: 37.5651, longitude: 126.9895, redirect_to: '/photos/3' },
-    { folder: 'folder1', title: '광화문', latitude: 37.5759, longitude: 126.9768, redirect_to: '/photos/4' },
+const colorPalette = [
+    '#e74c3c', '#3498db', '#f1c40f',
+    '#2ecc71', '#9b59b6', '#1abc9c',
 ];
-
-/* 폴더 → 핀 색상 매핑 */
-const pinColor = {
-    folder1: '#e74c3c',
-    folder2: '#3498db',
-    folder3: '#f1c40f',
-};
 
 export default function MapPage() {
     const router = useRouter();
-
-    /* ⭐ 현재 선택된 폴더 상태. 'all' = 전부 보기 */
+    const [locations, setLocations] = useState([]);
     const [active, setActive] = useState('all');
+    const [loading, setLoading] = useState(true);
 
-    /* ⭐ 중복 없는 폴더 목록 계산 */
+  /* ---------- 1. 데이터 fetch ---------- */
+    useEffect(() => {
+        (async () => {
+        try {
+            const res = await fetch('/api/get-total', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: 'kms', folder: 'math' }),
+        });
+        if (!res.ok) throw new Error('fetch failed');
+
+        const raw = await res.json();
+        const converted = raw.map(item => ({
+            folder: item.folder,
+            title : item.title,
+            latitude : item.latitude,
+            longitude: item.longitude,
+            redirect_to: `/photo/${item.id.split('__')[1]}`,
+        }));
+        setLocations(converted);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+        })();
+    }, []);
+
+  /* ---------- 2. 파생 상태 계산 ---------- */
     const folders = useMemo(
-        () => Array.from(new Set(locations.map((l) => l.folder))),
-        []
+        () => Array.from(new Set(locations.map(l => l.folder))),
+        [locations]
     );
 
-    /* ⭐ 필터링된 위치 */
-    const filtered = active === 'all'
-        ? locations
-        : locations.filter((l) => l.folder === active);
+    // 동적 폴더 → 색 매핑
+    const folderColor = useMemo(() => {
+        const map = {};
+        folders.forEach((f, idx) => {
+        map[f] = colorPalette[idx % colorPalette.length];
+        });
+        return map;
+    }, [folders]);
 
-    /* 지도의 초기 중심은 필터링 결과 첫 번째 좌표 */
-    const center = filtered[0] ?? locations[0];
+    // 좌표가 있는 데이터만
+    const dataWithCoords = locations.filter(
+        l => typeof l.latitude === 'number' && typeof l.longitude === 'number'
+    );
+
+    const filtered =
+        active === 'all'
+        ? dataWithCoords
+        : dataWithCoords.filter(l => l.folder === active);
+
+    const center = filtered[0] ?? { latitude: 37.5665, longitude: 126.9780 }; // ✅ fallback: 서울시청
+
+    /* ---------- 3. UI 렌더 ---------- */
+    if (loading) return <p style={{ padding: 20 }}>로딩 중…</p>;
 
     return (
         <div style={{ display: 'flex', height: '100vh' }}>
-        {/* === 사이드바 === */}
-        <aside
-            style={{
-            width: 150,
-            borderRight: '1px solid #ddd',
-            padding: '1rem',
-            boxSizing: 'border-box',
-            }}
-        >
-            <h3 style={{ margin: '0 0 0.5rem', fontSize: 16 }}>폴더 선택</h3>
+        {/* 사이드바 */}
+        <aside style={{ width: 150, borderRight: '1px solid #ddd', padding: '1rem' }}>
+            <h3 style={{ marginBottom: 8 }}>폴더 선택</h3>
 
-            {/* '전체' 버튼 */}
-            <button
+        <button
             onClick={() => setActive('all')}
             style={{
-                display: 'block',
-                width: '100%',
-                marginBottom: 6,
+                width: '100%', marginBottom: 6,
                 background: active === 'all' ? '#333' : '#f0f0f0',
                 color: active === 'all' ? '#fff' : '#000',
-                border: 'none',
-                padding: '4px 0',
-                cursor: 'pointer',
+                border: 'none', padding: '4px 0', cursor: 'pointer',
             }}
-            >
-            전체
-            </button>
+        >전체</button>
 
-            {/* 각 폴더 버튼 */}
-            {folders.map((f) => (
+        {folders.map(f => (
             <button
-                key={f}
-                onClick={() => setActive(f)}
-                style={{
-                display: 'block',
-                width: '100%',
-                marginBottom: 6,
-                background: active === f ? pinColor[f] : '#f0f0f0',
+            key={f}
+            onClick={() => setActive(f)}
+            style={{
+                width: '100%', marginBottom: 6,
+                background: active === f ? folderColor[f] : '#f0f0f0',
                 color: active === f ? '#fff' : '#000',
-                border: 'none',
-                padding: '4px 0',
-                cursor: 'pointer',
-                }}
-            >
-                {f}
-            </button>
-            ))}
+                border: 'none', padding: '4px 0', cursor: 'pointer',
+            }}
+            >{f}</button>
+        ))}
         </aside>
 
-        {/* === 지도 영역 === */}
+        {/* 지도 */}
         <div style={{ flex: 1 }}>
-            <Map
-            initialViewState={{
-                latitude: center.latitude,
-                longitude: center.longitude,
-                zoom: 10,
-            }}
+        <Map
+            initialViewState={{ latitude: center.latitude, longitude: center.longitude, zoom: 10 }}
             mapStyle="https://tiles.basemaps.cartocdn.com/gl/positron-gl-style/style.json"
-            >
+        >
             <NavigationControl position="top-right" />
-
-            {filtered.map((loc) => (
-                <Marker
-                key={`${loc.latitude}-${loc.longitude}-${loc.title}`}
-                latitude={loc.latitude}
-                longitude={loc.longitude}
-                anchor="bottom"
-                >
+            {filtered.map(loc => (
+                <Marker key={`${loc.latitude}-${loc.longitude}-${loc.title}`}
+                        latitude={loc.latitude}
+                        longitude={loc.longitude}
+                        anchor="bottom">
                 <button
                     onClick={() => router.push(loc.redirect_to)}
                     title={loc.title}
                     style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                 >
-                    <Pin color={pinColor[loc.folder]} />
+                    <Pin color={folderColor[loc.folder]} />
                 </button>
                 </Marker>
             ))}
             </Map>
         </div>
-        </div>
+    </div>
     );
 }

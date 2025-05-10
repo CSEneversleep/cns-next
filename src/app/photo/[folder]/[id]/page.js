@@ -1,33 +1,26 @@
-// src/app/photo/[id]/page.js
-import Image from 'next/image';
-import { photos } from '@/data/photos';
+// app/photo/[folder]/[id]/page.js
 
-export const dynamic = 'force-dynamic';
+import { getImage } from '@/utils/getImage';
 
-export default async function PhotoPage({params}) {
-    // 1) 데이터 가져오기 
-    const {folder, id} = await params;
-    const meta = photos.find(
-        (p) => p.id === id && p.folder === folder
-    );
-    if (!meta) return <p>Not found omg</p>;
+export const dynamic = 'force-dynamic'; // 캐싱 비활성화
 
-    // 2) 날짜 및 문자열 포맷
+export default async function PhotoPage({ params }) {
+    const { folder, id } = await params;
+
+    const meta = await getImage('kms', folder, id);
+    if (!meta) return <p>해당 사진이 존재하지 않습니다.</p>;
+
     const dateStr = meta.date ?? new Date(meta.timestamp).toLocaleDateString();
-    const locationStr = `${meta.latitude.toFixed(5)}, ${meta.longitude.toFixed(5)}`;
+    const locationStr = `${meta.latitude?.toFixed(5)}, ${meta.longitude?.toFixed(5)}`;
     const peopleStr = meta.peoples?.map(p => p.name).join(', ') ?? '없음';
 
     return (
         <main className="p-6 max-w-xl mx-auto space-y-6">
-        
         <div className="flex justify-center">
-            <Image
-            src={meta.src}
-            alt={meta.title}
+            <img src={meta.src} alt={meta.title} 
             width={400}
             height={300}
-            className="rounded-lg object-contain"
-            />
+            className="rounded-lg object-contain" />
         </div>
 
         <div className="space-y-2 text-base leading-relaxed">
@@ -39,4 +32,3 @@ export default async function PhotoPage({params}) {
         </main>
     );
 }
-
