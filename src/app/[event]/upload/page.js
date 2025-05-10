@@ -102,7 +102,6 @@ export default function UploadPage() {
             <button
               onClick={handleUpload}
               className="wide-button"
-              style={{ marginTop: '1rem' }}
             >
               업로드
             </button>
