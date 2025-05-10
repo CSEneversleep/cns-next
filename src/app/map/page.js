@@ -1,18 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import Pin from '@/components/Pin';           // 앞서 만든 아이콘
-
-/* 하드코딩 테스트 데이터 */
-const locations = [
-    { folder: 'folder1', title: '서울역', latitude: 37.556, longitude: 126.9723, redirect_to: '/photos/1' },
-    { folder: 'folder2', title: '한강',   latitude: 37.5271, longitude: 126.9369, redirect_to: '/photos/2' },
-    { folder: 'folder3', title: '회사',   latitude: 37.5651, longitude: 126.9895, redirect_to: '/photos/3' },
-    { folder: 'folder1', title: '광화문', latitude: 37.5759, longitude: 126.9768, redirect_to: '/photos/4' },
-];
 
 /* 폴더 → 핀 색상 매핑 */
 const pinColor = {
@@ -24,8 +16,42 @@ const pinColor = {
 export default function MapPage() {
     const router = useRouter();
 
-    /* ⭐ 현재 선택된 폴더 상태. 'all' = 전부 보기 */
+    const [locations, setLocations] = useState([]);
     const [active, setActive] = useState('all');
+
+    useEffect(() => {
+        async function fetchLocations() {
+            const res = await fetch('/api/get-all', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: 'kms',
+                folder: 'math' // 또는 사용자가 선택할 수 있게 만들 수도 있음
+            }),
+            });
+
+            if (res.ok) {
+            const data = await res.json();
+
+            const converted = data.map(item => ({
+                folder: item.folder,
+                title: item.title,
+                latitude: item.latitude ?? 37.5,
+                longitude: item.longitude ?? 126.9,
+                redirect_to: `/photo/${item.id.split('__')[1]}`, // 예: math__abc123 → abc123
+            }));
+
+            setLocations(converted);
+            } else {
+            console.error('Failed to fetch locations');
+            }
+        }
+
+        fetchLocations();
+    }, []);
+
 
     /* ⭐ 중복 없는 폴더 목록 계산 */
     const folders = useMemo(
