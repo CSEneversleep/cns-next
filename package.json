@@ -9,9 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "framer-motion": "^12.10.5",
+    "react-slick": "^0.30.3",
+    "slick-carousel": "^1.8.1",
+    "swiper": "^11.2.6",
     "exif-js": "^2.3.0",
     "leaflet": "^1.9.4",
-    "react-leaflet": "^5.0.0"
+    "react-leaflet": "^5.0.0",
     "maplibre-gl": "^5.5.0",
     "react-map-gl": "^8.0.4",
     "@aws-sdk/client-s3": "^3.806.0",
