@@ -8,8 +8,9 @@ import '@/styles/event.css';
 
 export default function UploadSection({ title, event }) {
   const fileInputRef = useRef(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [username, setUsername] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const placeholder = '익명의 오소리';
 
@@ -18,50 +19,64 @@ export default function UploadSection({ title, event }) {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) setSelectedFile(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setSelectedFiles(files);
+    }
   };
 
   const handleUpload = async () => {
     const finalUsername = username.trim() || placeholder;
-    if (!selectedFile) {
+    if (selectedFiles.length === 0) {
       alert('사진을 선택해주세요.');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64DataUrl = reader.result;
+    setIsUploading(true);
 
-      const payload = {
-        eventid: event,
-        content: base64DataUrl,
-        metadata: {
-          title: finalUsername,
-        },
-      };
+    try {
+      // 1. 파일 → base64 인코딩 먼저 병렬 처리
+      const dataUrls = await Promise.all(
+        selectedFiles.map(file => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve({ name: file.name, dataUrl: reader.result });
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        })
+      );
 
-      try {
-        const response = await fetch('/api/upload', {
+      // 2. base64 → fetch 병렬 처리
+      const uploadPromises = dataUrls.map(({ name, dataUrl }) => {
+        const payload = {
+          eventid: event,
+          content: dataUrl,
+          metadata: { title: finalUsername },
+        };
+
+        return fetch('/api/upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
+        }).then(response => {
+          if (!response.ok) {
+            throw new Error(`업로드 실패 (${name})`);
+          }
         });
+      });
 
-        if (response.ok) {
-          alert('업로드 완료!');
-          setSelectedFile(null);
-          setUsername('');
-        } else {
-          alert('업로드 실패');
-        }
-      } catch (err) {
-        console.error(err);
-        alert('에러 발생');
-      }
-    };
+      await Promise.all(uploadPromises);
 
-    reader.readAsDataURL(selectedFile);
+      alert('모든 파일 업로드 완료!');
+      setSelectedFiles([]);
+      setUsername('');
+    } catch (err) {
+      console.error(err);
+      alert('업로드 중 에러 발생');
+    }
+
+    setIsUploading(false);
   };
 
   return (
@@ -78,20 +93,21 @@ export default function UploadSection({ title, event }) {
 
         <button
           onClick={handleButtonClick}
-          className={`wide-button ${selectedFile ? 'white-button' : ''}`}
+          className={`wide-button ${selectedFiles.length > 0 ? 'white-button' : ''}`}
         >
-          사진 선택
+          사진 선택 ({selectedFiles.length}장)
         </button>
 
         <input
           type="file"
           ref={fileInputRef}
           accept="image/*"
+          multiple
           style={{ display: 'none' }}
           onChange={handleFileChange}
         />
 
-        {selectedFile && (
+        {selectedFiles.length > 0 && (
           <button
             onClick={handleUpload}
             className="wide-button"
