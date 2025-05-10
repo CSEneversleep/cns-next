@@ -25,7 +25,7 @@ export default async function EventPage({ params }) {
         <div className="button-group">
           <Link href={`/${event}/slide`} className="view-button">슬라이드처럼 보기</Link>
           <Link href={`/${event}/list`} className="view-button">목록으로 보기</Link>
-          <Link href={`/`} className="view-button">동영상으로 만들기</Link>
+          <Link href={`/photo2video`} className="view-button">동영상으로 만들기</Link>
         </div>
 
         {/* Action Buttons */}
