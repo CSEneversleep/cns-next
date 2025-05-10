@@ -1,126 +1,114 @@
-"use client";
-import { useParams } from "next/navigation";
-import { useRef, useState } from "react";
+'use client';
+
+// Next
+import { useParams } from 'next/navigation';
+// React
+import { useRef, useState } from 'react';
+// Component
+import NavBar from '@/app/components/NavBar';
+// Style (CSS)
+import '@/styles/global.css';
+import '@/styles/event.css'; 
 
 export default function UploadPage() {
-  const params = useParams();
-  const event = params.event;
+  const { event } = useParams();
   const fileInputRef = useRef(null);
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [username, setUsername] = useState("");
-  const [imageData, setImageData] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [username, setUsername] = useState('');
+
+  const placeholder = '익명의 오소리';
 
   const handleButtonClick = () => {
-    fileInputRef.current.click(); // Trigger the hidden file input
+    fileInputRef.current.click();
   };
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    // setImageData(files.map((file) => URL.createObjectURL(file))); // Create object URLs for preview
-    setSelectedFiles(files); // Store selected files
-    console.log("Selected file:", files);
+    const file = e.target.files?.[0];
+    if (file) setSelectedFile(file);
   };
 
   const handleUpload = async () => {
-    selectedFiles.forEach(async (file) => {
-      const reader = new FileReader();
-      reader.onload = async () => setImageData(reader.result);
-      reader.readAsDataURL(file);
+    const finalUsername = username.trim() || placeholder;
+    if (!selectedFile) {
+      alert('사진을 선택해주세요.');
+      return;
+    }
 
-      const body = {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64DataUrl = reader.result;
+
+      const payload = {
         eventid: event,
-        content: imageData,
+        content: base64DataUrl,
         metadata: {
-          lastModified: new Date(file.lastModified).toLocaleDateString(),
-          username: username,
-          size: (file.size / 1024).toFixed(2) + " KB", // Convert size to KB
-          type: file.type,
+          title: finalUsername,
         },
       };
 
       try {
-        const response = await fetch("/api/upload", {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          method: "POST",
-          body: JSON.stringify(body),
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
         });
 
         if (response.ok) {
-          console.log("File uploaded successfully:", file.name);
+          alert('업로드 완료!');
+          setSelectedFile(null);
+          setUsername('');
         } else {
-          console.error("Failed to upload file:", file.name);
-          console.log(response);
+          alert('업로드 실패');
         }
-      } catch (error) {
-        console.error("Error uploading file:", file.name, error);
+      } catch (err) {
+        console.error(err);
+        alert('에러 발생');
       }
-      setSelectedFiles([]); // Clear selected files after upload
-    });
+    };
+
+    reader.readAsDataURL(selectedFile);
   };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>{event}에 추억 올리기</h1>
-      <input
-        type="text"
-        placeholder="익명의 오소리"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        style={{
-          display: "block",
-          margin: "20px auto",
-          padding: "10px",
-          width: "80%",
-          maxWidth: "400px",
-          fontSize: "16px",
-          border: "1px solid #ccc",
-          borderRadius: "5px",
-        }}
-      />
-      <button
-        onClick={handleButtonClick}
-        style={{
-          display: "block",
-          margin: "20px auto",
-          padding: "10px 20px",
-          backgroundColor: "#FFC107",
-          color: "#000",
-          border: "none",
-          borderRadius: "5px",
-          fontSize: "16px",
-          cursor: "pointer",
-        }}
-      >
-        사진 선택
-      </button>
-      <input
-        type="file"
-        ref={fileInputRef}
-        // multiple
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={handleFileChange}
-      />
-      {selectedFiles.length > 0 && (
-        <button
-          onClick={handleUpload}
-          style={{
-            display: "block",
-            margin: "20px auto",
-            padding: "10px 20px",
-            backgroundColor: "#4CAF50",
-            color: "#fff",
-            border: "none",
-            borderRadius: "5px",
-            fontSize: "16px",
-            cursor: "pointer",
-          }}
-        >
-          업로드
-        </button>
-      )}
+    <div id="whole-container">
+      <NavBar />
+      <div id="upload-section">
+        <h1>{event}에 추억 올리기</h1>
+        <main className="main">
+          <input
+            type="text"
+            placeholder={placeholder}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="wide-input"
+          />
+
+          <button
+            onClick={handleButtonClick}
+            className={`wide-button ${selectedFile ? 'white-button' : ''}`}
+          >
+            사진 선택
+          </button>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+          />
+
+          {selectedFile && (
+            <button
+              onClick={handleUpload}
+              className="wide-button"
+              style={{ marginTop: '1rem' }}
+            >
+              업로드
+            </button>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
