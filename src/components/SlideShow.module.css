@@ -1,0 +1,57 @@
+.container {
+  width: 600px;
+  height: 600px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 검은 화면 + 중앙 텍스트 (인트로/아웃트로) */
+.blackSlide {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* 일반 슬라이드 그리드 */
+.slide {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.grid {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  gap: 2px;
+}
+
+.cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 중앙 빨간 라벨 */
+.centerLabel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 8px 20px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  border: 4px solid #ff0000;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 5;
+}
