@@ -19,7 +19,7 @@ export async function uploadImage(eventid, filename, data = {}) {
 
   const now = new Date(Date.now() + 9 * 60 * 60 * 1000); // KST
   const dateStr = now.toISOString().split('T')[0];       // YYYY-MM-DD
-  const timestamp = admin.firestore.Timestamp.fromDate(now);
+  const timestamp = Date.now();
 
   await docRef.set({
     filename,
