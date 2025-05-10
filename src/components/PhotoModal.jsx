@@ -1,39 +1,37 @@
+// app/components/PhotoModal.jsx
 'use client';
 
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import styles from './PhotoModal.module.css';
 
 export default function PhotoModal({ photo, onClose }) {
-  // ESC 키로도 닫히게
     useEffect(() => {
-        function handleKey(e) {
-        if (e.key === 'Escape') onClose();
-        }
+        const handleKey = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
         document.addEventListener('keydown', handleKey);
         return () => document.removeEventListener('keydown', handleKey);
     }, [onClose]);
 
-    return (
-        <div
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-        onClick={onClose} // 배경 클릭 시 닫기
-        >
-        <div
-            className="bg-white rounded-lg p-6 max-w-[90%] max-h-[90%] overflow-auto"
-            onClick={e => e.stopPropagation()}  // 내부 클릭은 전파 차단
-        >
-            <img
-            src={photo.src}
-            alt=""
-            className="max-w-full max-h-[70vh] mb-4"
-            />
-            <p className="text-gray-700 mb-2">제공자: {photo.username}</p>
-            <button
-            onClick={onClose}
-            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-            닫기
-            </button>
-        </div>
+    const modalLayer = (
+        // ② 네가 만든 클래스 그대로 사용
+        <div className={styles.background} onClick={onClose}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.viewer}>
+                    <img
+                        src={photo.src}
+                        alt={photo.title}
+                    />
+                </div>
+                <div className={styles.thumbnails}>
+                    {/* e.g. 미리보기 */}
+                    <img src={photo.src} alt="thumbnail" />
+                </div>
+                <button onClick={onClose} className={styles.closeButton}>닫기</button>
+            </div>
         </div>
     );
+
+    return createPortal(modalLayer, document.body);
 }
