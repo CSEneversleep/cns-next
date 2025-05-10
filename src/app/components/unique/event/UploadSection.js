@@ -27,35 +27,46 @@ export default function UploadSection({ title, event }) {
 
   const handleUpload = async () => {
     const finalUsername = username.trim() || placeholder;
+    if (selectedFiles.length === 0) {
+      alert('사진을 선택해주세요.');
+      return;
+    }
 
-    if (selectedFiles.length === 0) { alert('사진을 선택해주세요.'); return; }
     setIsUploading(true);
 
     try {
-      for (const file of selectedFiles) {
-        const reader = new FileReader();
-        const base64DataUrl = await new Promise((resolve, reject) => {
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+      // 1. 파일 → base64 인코딩 먼저 병렬 처리
+      const dataUrls = await Promise.all(
+        selectedFiles.map(file => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve({ name: file.name, dataUrl: reader.result });
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        })
+      );
 
+      // 2. base64 → fetch 병렬 처리
+      const uploadPromises = dataUrls.map(({ name, dataUrl }) => {
         const payload = {
           eventid: event,
-          content: base64DataUrl,
+          content: dataUrl,
           metadata: { title: finalUsername },
         };
 
-        const response = await fetch('/api/upload', {
+        return fetch('/api/upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
+        }).then(response => {
+          if (!response.ok) {
+            throw new Error(`업로드 실패 (${name})`);
+          }
         });
+      });
 
-        if (!response.ok) {
-          throw new Error(`업로드 실패 (${file.name})`);
-        }
-      }
+      await Promise.all(uploadPromises);
 
       alert('모든 파일 업로드 완료!');
       setSelectedFiles([]);
