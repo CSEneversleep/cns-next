@@ -1,5 +1,6 @@
 // @/app/page.js
 
+import NavBar from '@/app/components/NavBar';
 import '@/styles/index.css';
 
 export default function Home() {
