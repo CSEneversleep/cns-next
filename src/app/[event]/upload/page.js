@@ -4,9 +4,11 @@ import { useRef, useState } from "react";
 
 export default function UploadPage() {
   const params = useParams();
-  const event = params.event; // Get the dynamic [event] value
+  const event = params.event;
   const fileInputRef = useRef(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [username, setUsername] = useState("");
+  const [imageData, setImageData] = useState("");
 
   const handleButtonClick = () => {
     fileInputRef.current.click(); // Trigger the hidden file input
@@ -14,32 +16,47 @@ export default function UploadPage() {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
+    // setImageData(files.map((file) => URL.createObjectURL(file))); // Create object URLs for preview
     setSelectedFiles(files); // Store selected files
-    console.log("Selected files:", files);
+    console.log("Selected file:", files);
   };
 
   const handleUpload = async () => {
     selectedFiles.forEach(async (file) => {
-      const payload = {
+      const reader = new FileReader();
+      reader.onload = async () => setImageData(reader.result);
+      reader.readAsDataURL(file);
+
+      const body = {
         eventid: event,
-        content: file,
-        metadata: "what is metadata",
+        content: imageData,
+        metadata: {
+          lastModified: new Date(file.lastModified).toLocaleDateString(),
+          username: username,
+          size: (file.size / 1024).toFixed(2) + " KB", // Convert size to KB
+          type: file.type,
+        },
       };
+
       try {
         const response = await fetch("/api/upload", {
+          headers: {
+            "Content-Type": "application/json",
+          },
           method: "POST",
-          body: payload,
+          body: JSON.stringify(body),
         });
 
         if (response.ok) {
-          console.log("Files uploaded successfully");
-          setSelectedFiles([]); // Clear selected files after upload
+          console.log("File uploaded successfully:", file.name);
         } else {
-          console.error("Failed to upload files");
+          console.error("Failed to upload file:", file.name);
+          console.log(response);
         }
       } catch (error) {
-        console.error("Error uploading files:", error);
+        console.error("Error uploading file:", file.name, error);
       }
+      setSelectedFiles([]); // Clear selected files after upload
     });
   };
 
@@ -49,6 +66,8 @@ export default function UploadPage() {
       <input
         type="text"
         placeholder="익명의 오소리"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
         style={{
           display: "block",
           margin: "20px auto",
@@ -79,7 +98,7 @@ export default function UploadPage() {
       <input
         type="file"
         ref={fileInputRef}
-        multiple
+        // multiple
         accept="image/*"
         style={{ display: "none" }}
         onChange={handleFileChange}
