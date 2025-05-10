@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "exif-js": "^2.3.0",
+    "leaflet": "^1.9.4",
+    "react-leaflet": "^5.0.0"
     "maplibre-gl": "^5.5.0",
     "react-map-gl": "^8.0.4",
     "@aws-sdk/client-s3": "^3.806.0",
