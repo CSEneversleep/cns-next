@@ -2,53 +2,12 @@
 import { useState } from "react";
 import SingleImageShow from "./SingleImage";
 import MultipleImageShow from "./MultipleImage";
-import EXIF from "exif-js"; // Add this import
+import LoadImage from "./LoadImage";
 
 export default function MultiFileUploadForm() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previews, setPreviews] = useState([]); // Store multiple previews
   const [metadata, setMetadata] = useState([]); // Store metadata for each file
-
-  const handleChange = (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedFiles(files);
-
-    // Generate previews for all selected files
-    const filePreviews = files.map((file) => URL.createObjectURL(file));
-    setPreviews(filePreviews);
-
-    // Extract metadata for each file
-    const fileMetadata = files.map((file) => {
-      const metadata = {
-        name: file.name,
-        size: (file.size / 1024).toFixed(2) + " KB", // Convert size to KB
-        type: file.type,
-        lastModified: new Date(file.lastModified).toDateString(),
-      };
-
-      // Extract GPS metadata if the file is an image
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = function () {
-          EXIF.getData(file, function () {
-            const gpsLat = EXIF.getTag(this, "GPSLatitude");
-            const gpsLon = EXIF.getTag(this, "GPSLongitude");
-            if (gpsLat && gpsLon) {
-              metadata.location = {
-                latitude: gpsLat,
-                longitude: gpsLon,
-              };
-            }
-          });
-        };
-        reader.readAsArrayBuffer(file);
-      }
-
-      return metadata;
-    });
-
-    setMetadata(fileMetadata);
-  };
 
   // const handleUpload = async () => {
   //   console.log(selectedFiles);
@@ -66,8 +25,12 @@ export default function MultiFileUploadForm() {
 
   return (
     <div style={{ padding: "200px" }}>
-      <h1> Upload one or more files </h1>
-      <input type="file" multiple onChange={handleChange} />
+      <LoadImage
+        selectedFiles={selectedFiles}
+        setSelectedFiles={setSelectedFiles}
+        setPreviews={setPreviews}
+        setMetadata={setMetadata}
+      />
       <br />
       {selectedFiles.length === 0 ? null : selectedFiles.length === 1 ? (
         <SingleImageShow image={previews[0]} metadata={metadata[0]} />
