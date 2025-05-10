@@ -1,74 +1,125 @@
 // src/app/show/slide/SlideShow.js
-"use client";  // Client-side rendering을 위한 directive
+"use client";
 
-import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // AnimatePresence 임포트
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import styles from './SlideShow.module.css';
 
-function SlideShow({ photos, style }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef(null);
+export default function SlideShow({
+  photos,
+  animate = true,
+  width = "100%",        // ← 추가: 컨테이너 가로
+  height = null,          // ← 추가: 컨테이너 세로(지정 없으면 비율 유지)
+  arrowScale = 0.08,
+  showArrows = true
+}) {
+  const [index, setIndex]   = useState(0);
+  const total               = photos.length;
+  const audioRef            = useRef(null);
+  const containerRef = useRef(null);   // ★ 컨테이너 DOM 참조
+  const [arrowSize, setArrowSize] = useState(32);   // ★ 이 줄이 반드시 필요
+  const [audioStarted, setAudioStarted] = useState(false);
 
-  // 이미지 전환
+  /* ------------ 자동 슬라이드 ------------ */
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % photos.length);
-    }, 3000); // 3초마다 이미지 전환
+    if (!animate) return;
+    const id = setInterval(() => {
+      setIndex((p) => (p + 1) % total);
+    }, 3000);
+    return () => clearInterval(id);
+  }, [total, animate]);
 
-    return () => clearInterval(intervalId);
-  }, [photos.length]);
+  const next = () => setIndex((p) => (p + 1) % total);
+  const prev = () => setIndex((p) => (p - 1 + total) % total);
 
-  // 사용자가 화면을 클릭하면 오디오 재생 시작
-  const handleUserInteraction = () => {
-    if (audioRef.current && !isPlaying) {
-      audioRef.current.play()
-        .then(() => {
-          setIsPlaying(true);
-        })
-        .catch((error) => {
-          console.error("오디오 재생 실패:", error);
-        });
+  /* ------------ 음악 ------------ */
+  const handleFirstClick = () => {
+    if (!audioStarted && audioRef.current) {
+      audioRef.current.play().then(() => setAudioStarted(true)).catch(() => {});
     }
   };
+ /* 화살표 크기 계산 → 화살표가 없으면 건너뜀 */
+  useEffect(() => {
+    if (!showArrows) return;
+    if (typeof window === "undefined") return;
+    const el = containerRef.current;
+    if (!el) return;
 
-  // 사람들 이름과 날짜 문자열 생성
-  const peopleNames = photos[currentIndex].peoples.map(person => person.name).join(', ');
-  const date = photos[currentIndex].createdAt;
+    function update() {
+      const { offsetWidth: w, offsetHeight: h } = el;
+      setArrowSize(Math.min(w, h) * arrowScale);
+    }
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [arrowScale, showArrows]);
+
+  /* ------------ 컨테이너 크기 ------------ */
+  const containerStyle = height
+    ? { width, height }                        // 고정 W×H
+    : { width, paddingTop: "75%" };            // 비율 4:3 기본
 
   return (
-    <div onClick={handleUserInteraction} style={{ cursor: 'pointer', ...style }}>
-      <h1>{photos[currentIndex].title}</h1>
-      <p>{photos[currentIndex].description}</p>
-      <div className={styles.container}>
-        {/* AnimatePresence로 이미지 전환 시 애니메이션 추가 */}
-        <AnimatePresence exitBeforeEnter>
-          <motion.img
-            key={currentIndex} // key 값을 currentIndex로 설정해 매번 이미지가 변경될 때마다 리렌더링하도록 함
-            src={photos[currentIndex].imageUrl}
-            alt={photos[currentIndex].title}
-            className={styles.image}
-            initial={{ opacity: 0 }} // 시작 시 이미지가 보이지 않음
-            animate={{ opacity: 1 }} // 서서히 나타남
-            exit={{ opacity: 0 }} // 사라짐
-            transition={{ 
-              duration: 1, // 애니메이션 지속 시간
-              ease: "easeInOut", // 부드러운 애니메이션 시작과 끝
-            }} // 자연스럽게 변화
-          />
-        </AnimatePresence>
-        {/* 오른쪽 구석에 날짜, 사람 이름 표시 */}
-        <div className={styles.overlay}>
-          <p>{date}</p>
-          <p>{peopleNames}</p>
+    <div
+      ref = {containerRef}
+      className={`${styles.slider} ${!animate ? styles.noAnim : ""}`}
+      style={containerStyle}
+      onClick={handleFirstClick}
+    >
+      {photos.map((p, i) => (
+        <div
+          key={i}
+          className={`
+            ${styles.slide}
+            ${i === index ? styles.active : ""}
+            ${!animate ? styles.noAnimSlide : ""}
+          `}
+        >
+          <img className={styles.image} src={p.imageUrl} alt={p.title} />
+
+          {/* ① 날짜 + 인물 오버레이 */}
+          <div className={styles.infoOverlay}>
+            <p>{new Date(p.createdAt).toLocaleDateString()}</p>
+            {p.peoples?.length > 0 && (
+              <p>{p.peoples.map((pe) => pe.name).join(", ")}</p>
+            )}
+          </div>
+
+          {/* 하단 캡션 */}
+          <div className={styles.caption}>
+            <h3>{p.title}</h3>
+            <p>{p.description}</p>
+          </div>
         </div>
-      </div>
-      <audio ref={audioRef} loop>
-        <source src="/music/for_you.mp3" type="audio/mp3" />
-        Your browser does not support the audio element.
-      </audio>
+      ))}
+
+      {/* 화살표 */}
+      {showArrows && (
+            <>
+              <button
+                className={`${styles.arrow} ${styles.left}`}
+                style={{ fontSize: `${arrowSize}px`, padding: `${arrowSize * 0.3}px` }}
+                onClick={(e) => { e.stopPropagation(); prev(); }}
+              >
+                &#10094;
+              </button>
+
+              <button
+                className={`${styles.arrow} ${styles.right}`}
+                style={{ fontSize: `${arrowSize}px`, padding: `${arrowSize * 0.3}px` }}
+                onClick={(e) => { e.stopPropagation(); next(); }}
+              >
+                &#10095;
+              </button>
+            </>
+          )}
+
+      <button
+        className={`${styles.arrow} ${styles.right}`}
+        onClick={(e) => { e.stopPropagation(); next(); }}
+      >&#10095;</button>
+
+      <audio ref={audioRef} src="/music/for_you.mp3" loop preload="auto" />
     </div>
   );
 }
-
-export default SlideShow;
