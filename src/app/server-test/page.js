@@ -23,7 +23,7 @@ export default function UploadPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          eventid: '1004',
+          eventid: 'temp',
           content: imageData,
           metadata: { title },
         }),
