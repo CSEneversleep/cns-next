@@ -1,10 +1,13 @@
-// @/app/spi/upload/route.js
-
-import { uploadImage } from '@/utils/uploadImage';
+// @/app/api/upload/route.js
+import { NextResponse } from 'next/server';
+import { uploadImage } from '@/utils/uploadImage'; // 앞서 작성한 uploadImage 함수 사용
 
 export async function POST(req) {
-  const body = await req.json();
-  const result = await uploadImage(body.username, body.folder, body.content, body.metadata);
-
-  return Response.json(result);
+  try {
+    const { eventid, content, metadata } = await req.json();
+    const result = await uploadImage(eventid, content, metadata);
+    return NextResponse.json(result, { status: 200 });
+  } catch (err) {
+    return new Response(err.message, { status: 400 });
+  }
 }
